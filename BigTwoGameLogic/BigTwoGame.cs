@@ -216,7 +216,8 @@ namespace BigTwoGameLogic
             {
                 if (playHand == null) return false; // cannot pass
                 if (playHand.IndexOfCard("3D") < 0) return false; // must contain Diamond 3
-                if (playCards.Count == 3) return false; // not allow triple as first play
+
+                //if (playCards.Count == 3) return false; // not allow triple as first play
 
                 var playHandCards = playHand.GetCards();
                 if (BigTwoLogic.CheckBetterCards(playHandCards, null))
