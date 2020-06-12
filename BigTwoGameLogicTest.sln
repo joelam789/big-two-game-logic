@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigTwoGameLogicTest", "BigTwoGameLogicTest\BigTwoGameLogicTest.csproj", "{EB1FA6B9-7CA2-492C-AD94-8DE4CC270C57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BigTwoGameLogic", "BigTwoGameLogic\BigTwoGameLogic.csproj", "{B3C1C0D7-CB32-4734-BF78-88B56387009C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB1FA6B9-7CA2-492C-AD94-8DE4CC270C57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB1FA6B9-7CA2-492C-AD94-8DE4CC270C57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB1FA6B9-7CA2-492C-AD94-8DE4CC270C57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB1FA6B9-7CA2-492C-AD94-8DE4CC270C57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3C1C0D7-CB32-4734-BF78-88B56387009C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3C1C0D7-CB32-4734-BF78-88B56387009C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3C1C0D7-CB32-4734-BF78-88B56387009C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3C1C0D7-CB32-4734-BF78-88B56387009C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {89098292-B8EA-4FCC-AE55-50BA4E79876B}
+	EndGlobalSection
+EndGlobal
