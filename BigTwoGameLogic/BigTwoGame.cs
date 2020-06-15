@@ -112,7 +112,7 @@ namespace BigTwoGameLogic
             return result;
         }
 
-        public bool JoinGame(string playerName)
+        public bool JoinGame(string playerName, int playerScore = 0)
         {
             if (m_GameState != GAME_STATUS.WaitToStart) return false;
 
@@ -123,7 +123,7 @@ namespace BigTwoGameLogic
                 if (player.PlayerName == playerName) return false;
             }
 
-            m_Players.Add(new Player(playerName));
+            m_Players.Add(new Player(playerName, playerScore));
 
             return true;
         }
@@ -347,11 +347,16 @@ namespace BigTwoGameLogic
                     else if (count >= 8) count = count * 2;
 
                     total += count;
-                    player.GameScore = 0;
+                    player.GameScore = player.GameScore - count;
+                    player.CurrentHand.Clear(); // make sure we just calculate only one time per round
                 }
             }
 
-            if (winner != null) winner.GameScore = total;
+            if (winner != null)
+            {
+                winner.GameScore = winner.GameScore + total;
+                winner.CurrentHand.Clear();
+            }
 
             return true;
 
@@ -456,6 +461,11 @@ namespace BigTwoGameLogic
             SetCards(BigTwoLogic.MergeSort(cards));
         }
 
+        public void Clear()
+        {
+            if (m_Cards != null) m_Cards.Clear();
+        }
+
     }
 
     public class Deck
@@ -537,10 +547,10 @@ namespace BigTwoGameLogic
         public int GameScore { get; set; }
         public Hand CurrentHand { get; set; }
 
-        public Player(string playerName)
+        public Player(string playerName, int playerScore = 0)
         {
             PlayerName = playerName;
-            GameScore = 0;
+            GameScore = playerScore;
             CurrentHand = new Hand(new List<Card>());
         }
     }
