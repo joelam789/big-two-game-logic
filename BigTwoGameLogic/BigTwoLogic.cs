@@ -19,9 +19,26 @@ namespace BigTwoGameLogic
             'D','C','H','S'
         };
 
-        static readonly CommonRng m_Rng = new CommonRng();
+        static readonly Dictionary<string, string> m_CardCodes = new Dictionary<string, string>()
+        {
+            { "AD", "a" }, { "AC", "b" }, { "AH", "c" }, { "AS", "d" },
+            { "2D", "e" }, { "2C", "f" }, { "2H", "g" }, { "2S", "h" },
+            { "3D", "i" }, { "3C", "j" }, { "3H", "k" }, { "3S", "l" },
+            { "4D", "m" }, { "4C", "n" }, { "4H", "o" }, { "4S", "p" },
+            { "5D", "q" }, { "5C", "r" }, { "5H", "s" }, { "5S", "t" },
+            { "6D", "u" }, { "6C", "v" }, { "6H", "w" }, { "6S", "x" },
+            { "7D", "y" }, { "7C", "z" }, { "7H", "A" }, { "7S", "B" },
+            { "8D", "C" }, { "8C", "D" }, { "8H", "E" }, { "8S", "F" },
+            { "9D", "G" }, { "9C", "H" }, { "9H", "I" }, { "9S", "J" },
+            { "TD", "K" }, { "TC", "L" }, { "TH", "M" }, { "TS", "N" },
+            { "JD", "O" }, { "JC", "P" }, { "JH", "Q" }, { "JS", "R" },
+            { "QD", "S" }, { "QC", "T" }, { "QH", "U" }, { "QS", "V" },
+            { "KD", "W" }, { "KC", "X" }, { "KH", "Y" }, { "KS", "Z" },
+        };
 
-        public static CommonRng GetRng()
+        static readonly BigTwoRng m_Rng = new BigTwoRng();
+
+        public static BigTwoRng GetRng()
         {
             return m_Rng;
         }
@@ -29,6 +46,40 @@ namespace BigTwoGameLogic
         public static bool IsValidCard(Card card)
         {
             return m_RankOrder.Contains(card.Rank) && m_SuitOrder.Contains(card.Suit);
+        }
+
+        public static string CardToCode(Card card)
+        {
+            return m_CardCodes[card.ToString()];
+        }
+
+        public static Card CodeToCard(string code)
+        {
+            var str = m_CardCodes.FirstOrDefault(x => x.Value == code).Key;
+            if (!string.IsNullOrEmpty(str) && str.Length >= 2)
+            {
+                return new Card(str[0], str[1]);
+            }
+            return null;
+        }
+
+        public static string EncodeCards(List<Card> cards)
+        {
+            var strb = new StringBuilder();
+            foreach (var card in cards) strb.Append(CardToCode(card));
+            return strb.ToString();
+        }
+
+        public static List<Card> DecodeCards(string str)
+        {
+            List<Card> cards = new List<Card>();
+            var strb = new StringBuilder();
+            foreach (var code in str)
+            {
+                var card = CodeToCard(code.ToString());
+                if (card != null) cards.Add(card);
+            }
+            return cards;
         }
 
         public static List<Card> Merge(List<Card> list1, List<Card> list2)
@@ -559,7 +610,7 @@ namespace BigTwoGameLogic
 
     }
 
-    public class CommonRng
+    public class BigTwoRng
     {
         private RNGCryptoServiceProvider m_rngsp = new RNGCryptoServiceProvider();
 
