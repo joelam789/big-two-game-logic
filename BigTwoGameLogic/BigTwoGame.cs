@@ -128,21 +128,28 @@ namespace BigTwoGameLogic
             return true;
         }
 
-        public bool LeaveGame(string playerName)
+        public bool LeaveGame(string playerName = "")
         {
             if (m_GameState != GAME_STATUS.WaitToStart) return false;
 
-            if (m_Players.Count <= 0) return false;
-
-            foreach (var player in m_Players)
+            if (string.IsNullOrEmpty(playerName))
             {
-                if (player.PlayerName == playerName)
+                m_Players.Clear();
+                return true;
+            }
+            else
+            {
+                if (m_Players.Count <= 0) return false;
+
+                foreach (var player in m_Players)
                 {
-                    m_Players.Remove(player);
-                    return true;
+                    if (player.PlayerName == playerName)
+                    {
+                        m_Players.Remove(player);
+                        return true;
+                    }
                 }
             }
-
             return false;
         }
 
