@@ -473,6 +473,17 @@ namespace BigTwoGameLogic
             if (m_Cards != null) m_Cards.Clear();
         }
 
+        public override string ToString()
+        {
+            string str = "";
+            for (var i = 0; i < m_Cards.Count; i++)
+            {
+                if (str.Length <= 0) str = m_Cards[i].ToString();
+                else str = str + "," + m_Cards[i].ToString();
+            }
+            return str;
+        }
+
     }
 
     public class Deck
