@@ -336,6 +336,71 @@ namespace BigTwoGameLogic
             //return false;
         }
 
+        public bool CanPass(string playerName)
+        {
+            if (m_GameState != GAME_STATUS.PlayingCards) return false;
+            if (string.IsNullOrEmpty(m_CurrentPlayer)) return false;
+            if (m_CurrentPlayer != playerName) return false;
+
+            Player lastPlayer = null;
+            Player currentPlayer = null;
+            int currentPlayerIndex = -1;
+            for (var i = 0; i < m_Players.Count; i++)
+            {
+                if (m_Players[i].PlayerName == m_CurrentPlayer)
+                {
+                    currentPlayer = m_Players[i];
+                    currentPlayerIndex = i;
+                }
+                if (!string.IsNullOrEmpty(m_LastPlayer)
+                    && m_Players[i].PlayerName == m_LastPlayer)
+                {
+                    lastPlayer = m_Players[i];
+                }
+            }
+
+            if (currentPlayer == null) return false;
+
+            List<Card> lastPlay = m_LastPlay == null || m_LastPlay.Count == 0 ? null : new List<Card>();
+            if (lastPlay != null && m_LastPlay != null) lastPlay.AddRange(m_LastPlay);
+
+            // if it's first play
+            if (lastPlayer == null)
+            {
+                return false; // cannot pass
+            }
+            else
+            {
+                if (lastPlayer == currentPlayer)
+                {
+                    return false; // cannot pass
+                }
+                else
+                {
+                    int nextPlayerIndex = (currentPlayerIndex + 1) % m_Players.Count;
+                    var nextPlayer = m_Players[nextPlayerIndex];
+                    var nextPlayerCards = nextPlayer.CurrentHand.GetCards();
+
+                    if (nextPlayerCards.Count == 1)
+                    {
+                        if (lastPlay != null && lastPlay.Count == 1)
+                        {
+                            var best = BigTwoLogic.TryToGetBestSingle(currentPlayer.CurrentHand.GetCards());
+                            if (best != null && best.Count > 0)
+                            {
+                                var cards = currentPlayer.CurrentHand.GetCards(best);
+                                if (BigTwoLogic.CheckBetterSingle(cards[0], lastPlay[0])) return false; // cannot pass
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            }
+
+            //return true;
+        }
+
         public bool CalculateScores()
         {
             if (m_GameState != GAME_STATUS.EndRound) return false;
