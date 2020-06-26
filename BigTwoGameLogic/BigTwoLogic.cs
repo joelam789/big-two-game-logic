@@ -82,6 +82,17 @@ namespace BigTwoGameLogic
             return cards;
         }
 
+        public static string ToString(List<Card> cards)
+        {
+            string str = "";
+            for (var i = 0; i < cards.Count; i++)
+            {
+                if (str.Length <= 0) str = cards[i].ToString();
+                else str = str + "," + cards[i].ToString();
+            }
+            return str;
+        }
+
         public static List<Card> Merge(List<Card> list1, List<Card> list2)
         {
             var i = 0;

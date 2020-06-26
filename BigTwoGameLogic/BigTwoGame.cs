@@ -256,8 +256,23 @@ namespace BigTwoGameLogic
 
                 if (nextPlayerCards.Count == 1)
                 {
-                    if (cardList.Count == 1 
-                        && cardList[0] != playerCards.Count - 1) return false; // must be the biggest one
+                    if (cardList == null || cardList.Count == 0) // want to pass
+                    {
+                        if (lastPlay != null && lastPlay.Count == 1)
+                        {
+                            var best = BigTwoLogic.TryToGetBestSingle(currentPlayer.CurrentHand.GetCards());
+                            if (best != null && best.Count > 0)
+                            {
+                                var cards = currentPlayer.CurrentHand.GetCards(best);
+                                if (BigTwoLogic.CheckBetterSingle(cards[0], lastPlay[0])) return false; // cannot pass
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (cardList.Count == 1
+                            && cardList[0] != playerCards.Count - 1) return false; // must be the biggest one
+                    }
                 }
 
                 if (lastPlayer == currentPlayer)
@@ -540,13 +555,7 @@ namespace BigTwoGameLogic
 
         public override string ToString()
         {
-            string str = "";
-            for (var i = 0; i < m_Cards.Count; i++)
-            {
-                if (str.Length <= 0) str = m_Cards[i].ToString();
-                else str = str + "," + m_Cards[i].ToString();
-            }
-            return str;
+            return BigTwoLogic.ToString(m_Cards);
         }
 
     }
