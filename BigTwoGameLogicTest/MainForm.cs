@@ -110,8 +110,8 @@ namespace BigTwoGameLogicTest
         private bool AutoPlay()
         {
             var lastPlay = m_Game.GetLastPlay();
-            var lastPlayerName = m_Game.GetLastPlayer();
-            var currentPlayerName = m_Game.GetCurrentPlayer();
+            var lastPlayerName = m_Game.GetLastPlayerName();
+            var currentPlayerName = m_Game.GetCurrentTurnPlayerName();
 
             if (string.IsNullOrEmpty(currentPlayerName) || currentPlayerName == "You") return false;
 
@@ -153,8 +153,8 @@ namespace BigTwoGameLogicTest
             btnPlayerC.Enabled = false;
             btnPlay.Enabled = false;
 
-            var currentPlayer = m_Game.GetCurrentPlayer();
-            var lastPlayer = m_Game.GetLastPlayer();
+            var currentPlayer = m_Game.GetCurrentTurnPlayerName();
+            var lastPlayer = m_Game.GetLastPlayerName();
             var players = m_Game.GetPlayers();
             foreach (var player in players)
             {
@@ -250,8 +250,8 @@ namespace BigTwoGameLogicTest
             if (m_Game.GetGameState() != "PlayingCards") return;
 
             var lastPlay = m_Game.GetLastPlay();
-            var lastPlayerName = m_Game.GetLastPlayer();
-            var currentPlayerName = m_Game.GetCurrentPlayer();
+            var lastPlayerName = m_Game.GetLastPlayerName();
+            var currentPlayerName = m_Game.GetCurrentTurnPlayerName();
 
             if (currentPlayerName != "You") return;
 
@@ -314,15 +314,15 @@ namespace BigTwoGameLogicTest
 
         private void btnPlayerA_Click(object sender, EventArgs e)
         {
-            var currentName = m_Game.GetCurrentPlayer();
-            var lastName = m_Game.GetLastPlayer();
+            var currentName = m_Game.GetCurrentTurnPlayerName();
+            var lastName = m_Game.GetLastPlayerName();
             if (AutoPlay())
             {
-                var currentPlayerName = m_Game.GetCurrentPlayer();
-                var lastPlayerName = m_Game.GetLastPlayer();
+                var currentPlayerName = m_Game.GetCurrentTurnPlayerName();
+                var lastPlayerName = m_Game.GetLastPlayerName();
                 var lastPlay = m_Game.GetLastPlay();
 
-                if (m_Game.GetLastAccepted().Count <= 0)
+                if (m_Game.GetLastTurnPlay().Count <= 0)
                 {
                     LogMsg(currentName + " => PASS ");
                 }
@@ -352,7 +352,7 @@ namespace BigTwoGameLogicTest
         {
             if (m_Game.GetGameState() != "PlayingCards") return;
 
-            var currentPlayerName = m_Game.GetCurrentPlayer();
+            var currentPlayerName = m_Game.GetCurrentTurnPlayerName();
 
             if (currentPlayerName != "You") return;
 
@@ -385,8 +385,8 @@ namespace BigTwoGameLogicTest
             if (m_Game.GetGameState() != "PlayingCards") return;
 
             var lastPlay = m_Game.GetLastPlay();
-            var lastPlayerName = m_Game.GetLastPlayer();
-            var currentPlayerName = m_Game.GetCurrentPlayer();
+            var lastPlayerName = m_Game.GetLastPlayerName();
+            var currentPlayerName = m_Game.GetCurrentTurnPlayerName();
 
             if (currentPlayerName != "You") return;
 
@@ -458,7 +458,7 @@ namespace BigTwoGameLogicTest
             if (rbManualPlay.Checked) return;
             else if (rbNpcAutoPlay.Checked)
             {
-                if (m_Game.GetCurrentPlayer() == "You") return;
+                if (m_Game.GetCurrentTurnPlayerName() == "You") return;
 
                 if (btnPlayerA.Enabled) btnPlayerA.PerformClick();
                 else if (btnPlayerB.Enabled) btnPlayerB.PerformClick();

@@ -35,13 +35,16 @@ namespace BigTwoGameLogic
         private Deck m_Deck = new Deck();
 
         private List<Card> m_LastPlay = new List<Card>();
-        private List<Card> m_LastAccepted = new List<Card>();
-        private string m_LastPlayer = "";
-        private string m_CurrentPlayer = "";
+        private List<Card> m_LastTurnPlay = new List<Card>();
+        private string m_LastPlayerName = "";
+        private string m_LastTurnPlayerName = "";
+        private string m_CurrentTurnPlayerName = "";
+
+        private int m_CurrentTurns = 0;
 
         public bool GetGameReady(bool withNewShoe = false)
         {
-            if (m_GameState == GAME_STATUS.Unknown 
+            if (m_GameState == GAME_STATUS.Unknown
                 || m_GameState == GAME_STATUS.EndRound)
             {
                 m_GameState = GAME_STATUS.WaitToStart;
@@ -51,6 +54,8 @@ namespace BigTwoGameLogic
                     m_ShoeCode = DateTime.Now.ToString("yyyyMMddHHmmss");
                     m_RoundIndex = 0;
                 }
+
+                m_CurrentTurns = 0;
 
                 return true;
             }
@@ -88,14 +93,24 @@ namespace BigTwoGameLogic
             return m_GameStatus[(int)m_GameState];
         }
 
-        public string GetCurrentPlayer()
+        public string GetCurrentTurnPlayerName()
         {
-            return string.Copy(m_CurrentPlayer);
+            return string.Copy(m_CurrentTurnPlayerName);
         }
 
-        public string GetLastPlayer()
+        public int GetCurrentTurns()
         {
-            return string.Copy(m_LastPlayer);
+            return m_CurrentTurns;
+        }
+
+        public string GetLastPlayerName()
+        {
+            return string.Copy(m_LastPlayerName);
+        }
+
+        public string GetLastTurnPlayerName()
+        {
+            return string.Copy(m_LastTurnPlayerName);
         }
 
         public List<Card> GetLastPlay()
@@ -105,10 +120,10 @@ namespace BigTwoGameLogic
             return result;
         }
 
-        public List<Card> GetLastAccepted()
+        public List<Card> GetLastTurnPlay()
         {
             var result = new List<Card>();
-            result.AddRange(m_LastAccepted);
+            result.AddRange(m_LastTurnPlay);
             return result;
         }
 
@@ -161,18 +176,21 @@ namespace BigTwoGameLogic
             m_RoundIndex++;
 
             m_LastPlay.Clear();
-            m_LastAccepted.Clear();
-            m_LastPlayer = "";
-            m_CurrentPlayer = "";
+            m_LastTurnPlay.Clear();
+            m_LastPlayerName = "";
+            m_LastTurnPlayerName = "";
+            m_CurrentTurnPlayerName = "";
+
+            m_CurrentTurns = 0;
 
             m_Deck.Shuffle();
             var hands = m_Deck.Distribute(m_Players.Count, "3D");
-            for (var i=0; i< m_Players.Count; i++)
+            for (var i = 0; i < m_Players.Count; i++)
             {
                 hands[i].SortCards();
                 m_Players[i].CurrentHand = hands[i];
                 if (hands[i].IndexOfCard("3D") >= 0)
-                    m_CurrentPlayer = m_Players[i].PlayerName;
+                    m_CurrentTurnPlayerName = m_Players[i].PlayerName;
             }
 
             m_GameState = GAME_STATUS.PlayingCards;
@@ -182,21 +200,21 @@ namespace BigTwoGameLogic
         public bool AcceptPlay(string playerName, List<int> cardList)
         {
             if (m_GameState != GAME_STATUS.PlayingCards) return false;
-            if (string.IsNullOrEmpty(m_CurrentPlayer)) return false;
-            if (m_CurrentPlayer != playerName) return false;
+            if (string.IsNullOrEmpty(m_CurrentTurnPlayerName)) return false;
+            if (m_CurrentTurnPlayerName != playerName) return false;
 
             Player lastPlayer = null;
             Player currentPlayer = null;
             int currentPlayerIndex = -1;
             for (var i = 0; i < m_Players.Count; i++)
             {
-                if (m_Players[i].PlayerName == m_CurrentPlayer)
+                if (m_Players[i].PlayerName == m_CurrentTurnPlayerName)
                 {
                     currentPlayer = m_Players[i];
                     currentPlayerIndex = i;
                 }
-                if (!string.IsNullOrEmpty(m_LastPlayer)
-                    && m_Players[i].PlayerName == m_LastPlayer)
+                if (!string.IsNullOrEmpty(m_LastPlayerName)
+                    && m_Players[i].PlayerName == m_LastPlayerName)
                 {
                     lastPlayer = m_Players[i];
                 }
@@ -229,12 +247,13 @@ namespace BigTwoGameLogic
                 var playHandCards = playHand.GetCards();
                 if (BigTwoLogic.CheckBetterCards(playHandCards, null))
                 {
-                    m_LastAccepted.Clear();
-                    m_LastAccepted.AddRange(playHandCards);
+                    m_LastTurnPlay.Clear();
+                    m_LastTurnPlay.AddRange(playHandCards);
 
                     m_LastPlay.Clear();
                     m_LastPlay.AddRange(playHandCards);
-                    m_LastPlayer = string.Copy(m_CurrentPlayer);
+                    m_LastPlayerName = string.Copy(m_CurrentTurnPlayerName);
+                    m_LastTurnPlayerName = string.Copy(m_CurrentTurnPlayerName);
 
                     foreach (var playCard in playCards)
                         currentPlayer.CurrentHand.Discard(playCard.ToString());
@@ -242,7 +261,9 @@ namespace BigTwoGameLogic
                     currentPlayer.CurrentHand.SortCards();
 
                     int nextPlayerIndex = (currentPlayerIndex + 1) % m_Players.Count;
-                    m_CurrentPlayer = m_Players[nextPlayerIndex].PlayerName;
+                    m_CurrentTurnPlayerName = m_Players[nextPlayerIndex].PlayerName;
+
+                    m_CurrentTurns++;
 
                     return true;
                 }
@@ -267,6 +288,15 @@ namespace BigTwoGameLogic
                                 if (BigTwoLogic.CheckBetterSingle(cards[0], lastPlay[0])) return false; // cannot pass
                             }
                         }
+                        else if (lastPlay != null && lastPlayer == nextPlayer)
+                        {
+                            var best = BigTwoLogic.TryToGiveOutBest(currentPlayer.CurrentHand.GetCards(), lastPlay.Count);
+                            if (best != null && best.Count > 0)
+                            {
+                                var cards = currentPlayer.CurrentHand.GetCards(best);
+                                if (BigTwoLogic.CheckBetterCards(cards, lastPlay)) return false; // cannot pass
+                            }
+                        }
                     }
                     else
                     {
@@ -282,26 +312,29 @@ namespace BigTwoGameLogic
                     var playHandCards = playHand.GetCards();
                     if (BigTwoLogic.CheckBetterCards(playHandCards, null))
                     {
-                        m_LastAccepted.Clear();
-                        m_LastAccepted.AddRange(playHandCards);
+                        m_LastTurnPlay.Clear();
+                        m_LastTurnPlay.AddRange(playHandCards);
 
                         m_LastPlay.Clear();
                         m_LastPlay.AddRange(playHandCards);
-                        m_LastPlayer = string.Copy(m_CurrentPlayer);
+                        m_LastPlayerName = string.Copy(m_CurrentTurnPlayerName);
+                        m_LastTurnPlayerName = string.Copy(m_CurrentTurnPlayerName);
 
                         foreach (var playCard in playCards)
                             currentPlayer.CurrentHand.Discard(playCard.ToString());
 
                         if (currentPlayer.CurrentHand.GetNumberOfCards() == 0)
                         {
-                            m_CurrentPlayer = "";
+                            m_CurrentTurnPlayerName = "";
                             m_GameState = GAME_STATUS.EndRound;
                         }
                         else
                         {
                             currentPlayer.CurrentHand.SortCards();
-                            m_CurrentPlayer = nextPlayer.PlayerName;
+                            m_CurrentTurnPlayerName = nextPlayer.PlayerName;
                         }
+
+                        m_CurrentTurns++;
 
                         return true;
                     }
@@ -311,8 +344,10 @@ namespace BigTwoGameLogic
                 {
                     if (playHand == null) // pass
                     {
-                        m_LastAccepted.Clear();
-                        m_CurrentPlayer = nextPlayer.PlayerName;
+                        m_LastTurnPlay.Clear();
+                        m_LastTurnPlayerName = string.Copy(m_CurrentTurnPlayerName);
+                        m_CurrentTurnPlayerName = nextPlayer.PlayerName;
+                        m_CurrentTurns++;
                         return true;
                     }
                     else
@@ -320,26 +355,29 @@ namespace BigTwoGameLogic
                         var playHandCards = playHand.GetCards();
                         if (BigTwoLogic.CheckBetterCards(playHandCards, lastPlay))
                         {
-                            m_LastAccepted.Clear();
-                            m_LastAccepted.AddRange(playHandCards);
+                            m_LastTurnPlay.Clear();
+                            m_LastTurnPlay.AddRange(playHandCards);
 
                             m_LastPlay.Clear();
                             m_LastPlay.AddRange(playHandCards);
-                            m_LastPlayer = string.Copy(m_CurrentPlayer);
+                            m_LastPlayerName = string.Copy(m_CurrentTurnPlayerName);
+                            m_LastTurnPlayerName = string.Copy(m_CurrentTurnPlayerName);
 
                             foreach (var playCard in playCards)
                                 currentPlayer.CurrentHand.Discard(playCard.ToString());
 
                             if (currentPlayer.CurrentHand.GetNumberOfCards() == 0)
                             {
-                                m_CurrentPlayer = "";
+                                m_CurrentTurnPlayerName = "";
                                 m_GameState = GAME_STATUS.EndRound;
                             }
                             else
                             {
                                 currentPlayer.CurrentHand.SortCards();
-                                m_CurrentPlayer = nextPlayer.PlayerName;
+                                m_CurrentTurnPlayerName = nextPlayer.PlayerName;
                             }
+
+                            m_CurrentTurns++;
 
                             return true;
                         }
@@ -354,21 +392,21 @@ namespace BigTwoGameLogic
         public bool CanPass(string playerName)
         {
             if (m_GameState != GAME_STATUS.PlayingCards) return false;
-            if (string.IsNullOrEmpty(m_CurrentPlayer)) return false;
-            if (m_CurrentPlayer != playerName) return false;
+            if (string.IsNullOrEmpty(m_CurrentTurnPlayerName)) return false;
+            if (m_CurrentTurnPlayerName != playerName) return false;
 
             Player lastPlayer = null;
             Player currentPlayer = null;
             int currentPlayerIndex = -1;
             for (var i = 0; i < m_Players.Count; i++)
             {
-                if (m_Players[i].PlayerName == m_CurrentPlayer)
+                if (m_Players[i].PlayerName == m_CurrentTurnPlayerName)
                 {
                     currentPlayer = m_Players[i];
                     currentPlayerIndex = i;
                 }
-                if (!string.IsNullOrEmpty(m_LastPlayer)
-                    && m_Players[i].PlayerName == m_LastPlayer)
+                if (!string.IsNullOrEmpty(m_LastPlayerName)
+                    && m_Players[i].PlayerName == m_LastPlayerName)
                 {
                     lastPlayer = m_Players[i];
                 }
@@ -407,6 +445,15 @@ namespace BigTwoGameLogic
                                 if (BigTwoLogic.CheckBetterSingle(cards[0], lastPlay[0])) return false; // cannot pass
                             }
                         }
+                        else if (lastPlay != null && lastPlayer == nextPlayer)
+                        {
+                            var best = BigTwoLogic.TryToGiveOutBest(currentPlayer.CurrentHand.GetCards(), lastPlay.Count);
+                            if (best != null && best.Count > 0)
+                            {
+                                var cards = currentPlayer.CurrentHand.GetCards(best);
+                                if (BigTwoLogic.CheckBetterCards(cards, lastPlay)) return false; // cannot pass
+                            }
+                        }
                     }
 
                     return true;
@@ -422,7 +469,7 @@ namespace BigTwoGameLogic
 
             int total = 0;
             Player winner = null;
-            
+
             foreach (var player in m_Players)
             {
                 int count = player.CurrentHand.GetNumberOfCards();
@@ -444,6 +491,8 @@ namespace BigTwoGameLogic
                 winner.GameScore = winner.GameScore + total;
                 winner.CurrentHand.Clear();
             }
+
+            m_CurrentTurns = 0;
 
             return true;
 
