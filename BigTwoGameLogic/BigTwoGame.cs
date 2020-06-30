@@ -492,7 +492,7 @@ namespace BigTwoGameLogic
                 winner.CurrentHand.Clear();
             }
 
-            m_CurrentTurns = 0;
+            //m_CurrentTurns = 0;
 
             return true;
 
